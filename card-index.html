@@ -144,7 +144,7 @@
       <span>garcilaso05@github:~$</span>
       <input id="cmd-input" type="text" autocomplete="off" spellcheck="false" placeholder="type a command..." autofocus />
     </div>
-    <div class="hint">try: whoami · skills · education · projects · contact · help</div>
+    <div class="hint">try: whoami · skills · education · projects · contact · studies · help</div>
   </div>
 
   <script>
@@ -221,9 +221,19 @@
           { html: '  <span class="blue" style="color:var(--blue)">whoami</span>    · personal overview' },
           { html: '  <span class="blue" style="color:var(--blue)">skills</span>    · languages & tools' },
           { html: '  <span class="blue" style="color:var(--blue)">education</span> · degree & coursework' },
+          { html: '  <span class="blue" style="color:var(--blue)">studies</span>  · studies (English output)' },
           { html: '  <span class="blue" style="color:var(--blue)">projects</span>  · hackathons & work' },
           { html: '  <span class="blue" style="color:var(--blue)">contact</span>   · links' },
           { html: '  <span class="blue" style="color:var(--blue)">clear</span>     · clear terminal' },
+          { text: '' },
+        ];
+      },
+      studies() {
+        return [
+          { text: '' },
+          { html: '<span class="ok">1. Computer Engineering student (Universitat Rovira i Virgili, Tarragona)</span>' },
+          { html: '<span class="ok">2. Sailing sports technician T1 (Sailing instructor) — Institut Nàutic de Barcelona</span>' },
+          { html: '<span class="ok">3. Professional Conservatory of Music (Vila-seca) — Specialization: Guitar</span>' },
           { text: '' },
         ];
       },
