@@ -30,3 +30,9 @@ How to run
 
 Notes
 - The project is self-contained and requires only a modern web browser.
+
+---
+Images
+
+<img width="755" height="570" alt="260305_14h03m29s_screenshot" src="https://github.com/user-attachments/assets/2713d574-8887-4590-b547-a4b259c7f298" />
+
