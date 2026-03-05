@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>garcilaso05 — terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #21262d;
+      --green: #3fb950;
+      --blue: #58a6ff;
+      --yellow: #e3b341;
+      --red: #f85149;
+      --muted: #8b949e;
+      --text: #c9d1d9;
+      --white: #f0f6fc;
+      --prompt-color: #3fb950;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .window {
+      width: 100%;
+      max-width: 720px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    }
+
+    .titlebar {
+      background: #1c2128;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dots { display: flex; gap: 7px; }
+    .dot {
+      width: 12px; height: 12px; border-radius: 50%;
+    }
+    .dot-red   { background: #ff5f57; }
+    .dot-yellow{ background: #febc2e; }
+    .dot-green { background: #28c840; }
+
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    .terminal {
+      padding: 20px 24px;
+      min-height: 420px;
+      max-height: 70vh;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .line { margin-bottom: 4px; font-size: 13.5px; line-height: 1.7; }
+    .line.gap { margin-bottom: 14px; }
+
+    .prompt { color: var(--prompt-color); }
+    .cmd    { color: var(--white); }
+    .key    { color: var(--blue); font-weight: 600; min-width: 140px; display: inline-block; }
+    .val    { color: var(--text); }
+    .tag    { color: var(--yellow); }
+    .link   { color: var(--blue); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color .15s; }
+    .link:hover { border-color: var(--blue); }
+    .error  { color: var(--red); }
+    .ok     { color: var(--green); }
+    .muted  { color: var(--muted); }
+    .section-head { color: var(--green); font-weight: 600; margin-top: 4px; }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 24px 18px;
+    }
+
+    .input-row span { color: var(--prompt-color); font-size: 13.5px; white-space: nowrap; }
+
+    #cmd-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--white);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      caret-color: var(--green);
+    }
+
+    .hint {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      padding-bottom: 16px;
+      letter-spacing: 0.05em;
+    }
+
+    .blink {
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="titlebar">
+      <div class="dots">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+      </div>
+      <div class="title">garcilaso05@github — bash</div>
+    </div>
+
+    <div class="terminal" id="terminal"></div>
+
+    <div class="input-row">
+      <span>garcilaso05@github:~$</span>
+      <input id="cmd-input" type="text" autocomplete="off" spellcheck="false" placeholder="type a command..." autofocus />
+    </div>
+    <div class="hint">try: whoami · skills · education · projects · contact · help</div>
+  </div>
+
+  <script>
+    const terminal = document.getElementById('terminal');
+    const input    = document.getElementById('cmd-input');
+
+    const commands = {
+      whoami() {
+        return [
+          { text: '' },
+          { html: '<span class="ok">Roger García Doncel</span>' },
+          { html: '<span class="muted">Computer Engineering Student · Universitat Rovira i Virgili</span>' },
+          { text: '' },
+          { html: '<span class="key">Specialization  </span><span class="val">Computer Architecture & Low-Level Systems</span>' },
+          { html: '<span class="key">Interests       </span><span class="val">OS internals, drivers, assembly, processor design</span>' },
+          { html: '<span class="key">Role in projects</span><span class="val">Full-stack (frontend → backend → DB → data)</span>' },
+          { text: '' },
+        ];
+      },
+      skills() {
+        return [
+          { text: '' },
+          { html: '<span class="section-head">── Languages</span>' },
+          { html: '  <span class="tag">low-level</span>   C · Java · Assembly' },
+          { html: '  <span class="tag">scripting </span>   Python · JavaScript · Bash' },
+          { html: '  <span class="tag">web       </span>   HTML · CSS · JS' },
+          { text: '' },
+          { html: '<span class="section-head">── Infrastructure & Data</span>' },
+          { html: '  MySQL · PostgreSQL · MongoDB · Redis · Firebase · Supabase' },
+          { html: '  Docker · Git · Linux · Arduino' },
+          { text: '' },
+          { html: '<span class="section-head">── Areas of study</span>' },
+          { html: '  Networking · Network Security · Distributed Systems' },
+          { html: '  AI · Application Design · Web Development' },
+          { text: '' },
+        ];
+      },
+      education() {
+        return [
+          { text: '' },
+          { html: '<span class="ok">Universitat Rovira i Virgili</span> — Tarragona, Spain' },
+          { html: '<span class="muted">B.Sc. Computer Engineering  ·  Architecture branch</span>' },
+          { text: '' },
+          { html: 'Relevant coursework: Computer Architecture, Operating Systems,' },
+          { html: 'Device Drivers, Databases, Networks, Security, Distributed Systems,' },
+          { html: 'Artificial Intelligence, Web Development, Software Design.' },
+          { text: '' },
+        ];
+      },
+      projects() {
+        return [
+          { text: '' },
+          { html: '<span class="section-head">── Community</span>' },
+          { html: '  Member of <span class="tag">CodeURV</span> — university CS association' },
+          { html: '  Active hackathon competitor (and winner)' },
+          { text: '' },
+          { html: '<span class="section-head">── Personal Projects</span>' },
+          { html: '  Full details at <a class="link" href="https://garcilaso05.github.io/portafolios/" target="_blank">garcilaso05.github.io/portafolios</a>' },
+          { text: '' },
+        ];
+      },
+      contact() {
+        return [
+          { text: '' },
+          { html: '<span class="key">GitHub    </span><a class="link" href="https://github.com/garcilaso05" target="_blank">github.com/garcilaso05</a>' },
+          { html: '<span class="key">Portfolio </span><a class="link" href="https://garcilaso05.github.io/portafolios/" target="_blank">garcilaso05.github.io/portafolios</a>' },
+          { text: '' },
+        ];
+      },
+      help() {
+        return [
+          { text: '' },
+          { html: '<span class="muted">Available commands:</span>' },
+          { html: '  <span class="blue" style="color:var(--blue)">whoami</span>    · personal overview' },
+          { html: '  <span class="blue" style="color:var(--blue)">skills</span>    · languages & tools' },
+          { html: '  <span class="blue" style="color:var(--blue)">education</span> · degree & coursework' },
+          { html: '  <span class="blue" style="color:var(--blue)">projects</span>  · hackathons & work' },
+          { html: '  <span class="blue" style="color:var(--blue)">contact</span>   · links' },
+          { html: '  <span class="blue" style="color:var(--blue)">clear</span>     · clear terminal' },
+          { text: '' },
+        ];
+      },
+    };
+
+    function print(lines) {
+      for (const l of lines) {
+        const div = document.createElement('div');
+        div.className = 'line';
+        if (l.html) div.innerHTML = l.html;
+        else div.textContent = l.text ?? '';
+        terminal.appendChild(div);
+      }
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function printPrompt(cmd) {
+      const div = document.createElement('div');
+      div.className = 'line';
+      div.innerHTML = `<span class="prompt">garcilaso05@github:~$</span> <span class="cmd">${cmd}</span>`;
+      terminal.appendChild(div);
+    }
+
+    function run(raw) {
+      const cmd = raw.trim().toLowerCase();
+      if (!cmd) return;
+      printPrompt(raw.trim());
+
+      if (cmd === 'clear') { terminal.innerHTML = ''; return; }
+
+      if (commands[cmd]) {
+        print(commands[cmd]());
+      } else {
+        print([
+          { html: `<span class="error">command not found: ${cmd}</span> — try <span class="ok">help</span>` },
+          { text: '' },
+        ]);
+      }
+    }
+
+    // Boot sequence
+    print([
+      { html: '<span class="muted">Welcome. Type <span class="ok">help</span> to get started.</span>' },
+      { text: '' },
+    ]);
+    run('whoami');
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = input.value;
+        input.value = '';
+        run(val);
+      }
+    });
+
+    // click anywhere to focus
+    document.querySelector('.window').addEventListener('click', () => input.focus());
+  </script>
+</body>
+</html>
